@@ -13,7 +13,7 @@
 
     <ItemGroup>
       <Reference Include="BybitMapper">
-        <HintPath>..\..\TradingClient\_Libraries\BybitMapper\BybitMapper.dll</HintPath>
+        <HintPath>..\..\..\TradingClient\_Libraries\BybitMapper\BybitMapper.dll</HintPath>
       </Reference>
     </ItemGroup>
 

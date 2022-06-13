@@ -1,5 +1,8 @@
 ﻿using System.Linq;
+using BybitMapper.Perpetual.RestV2.Requests.Market;
+using BybitMapper.Perpetual.RestV2.Responses.Market;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApplication2.Contexts;
 using WebApplication2.Entities;
 using WebApplication2.Requests;
@@ -11,6 +14,7 @@ namespace WebApplication2.Controllers
     public class WalletController : ControllerBase
     {
         public MySQL _mySQL;
+
         public WalletController(MySQL mySQL)
         {
             _mySQL = mySQL;
@@ -36,5 +40,14 @@ namespace WebApplication2.Controllers
         {
             return Ok(_mySQL.InfoWallets.ToList());
         }
+        
+        [HttpGet]
+        [Route("getQuerySymbol")] 
+        public IActionResult GetQuerySymbol()
+        {
+            ByBitClient query = ; //дб 2
+            QuerySymbolRequest List<QueryEntity>() = new QuerySymbolRequest();
+        }
+        
     }
 }

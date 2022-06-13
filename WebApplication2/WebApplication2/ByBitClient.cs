@@ -1,7 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using BybitMapper.InversePerpetual.RestV2.Requests.Market;
 using BybitMapper.Perpetual.RestV2;
 using BybitMapper.Requests;
 using RestSharp;
+
+using BybitMapper.Perpetual.RestV2.Requests.Market;
+
+using BybitMapper.Perpetual.RestV2.Responses.Market;
+using RestSharp.Serialization.Json;
 
 namespace WebApplication2
 {
@@ -33,48 +40,55 @@ namespace WebApplication2
             m_RequestArranger = new RequestArranger(api_key, secret, func);
             _restClient = new RestClient();
         }
+        
         #region [Base]
-
-        string SendRestRequest(IRequestContent message)
+        public string SendTest(RequestPayload payload)
         {
-            Method method;
+            // var h = new Dictionary<string, string> { { "Referer", "Cscalp" } };
+            var request = m_RequestArranger.Arrange(payload);
+            var req = new RestRequest(request.Query, MapRequestMethod(request.Method));
 
-            switch (message.Method)
+            if (request.Body != null)
             {
-                case RequestMethod.GET:
-                    method = Method.GET;
-                    break;
-                case RequestMethod.POST:
-                    method = Method.POST;
-                    break;
-                case RequestMethod.PUT:
-                    method = Method.PUT;
-                    break;
-                case RequestMethod.DELETE:
-                    method = Method.DELETE;
-                    break;
-                default:
-                    throw new NotImplementedException("Unknown request method");
+                req.RequestFormat = DataFormat.Json;
+                req.AddBody(request.Body);
             }
 
-            var request = new RestRequest(message.Query, method);
-            if (message.Body != null)
+            if (request.Headers != null)
             {
-                request.RequestFormat = DataFormat.Json;
-                request.AddBody(message.Body);
-            }
-
-            if (message.Headers != null)
-            {
-                foreach (var header in message.Headers)
+                foreach (var header in request.Headers)
                 {
-                    request.AddHeader(header.Key, header.Value);
+                    req.AddHeader(header.Key, header.Value);
                 }
             }
-
-            return _restClient.Execute(request).Content;
+            var result = _restClient.Execute(req)?.Content;
+            return (result);
         }
+        private static Method MapRequestMethod(RequestMethod method)
+        {
+            switch (method)
+            {
+                case RequestMethod.GET:
+                    return Method.GET;
+                case RequestMethod.POST:
+                    return Method.POST;
+                case RequestMethod.PUT:
+                    return Method.PUT;
+                case RequestMethod.DELETE:
+                    return Method.DELETE;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+        
         #endregion
         
+         public QuerySymbolResponse QuerySymbolRequest() //для таблицы инструментов (нужно создать для баланса)
+        {
+            var request = new QuerySymbolRequest();
+            var response = SendTest(request);
+            var obj = m_HandlerComposition.HandleQuerySymbolResponse(response);
+            return obj;
+        }
     }
 }
