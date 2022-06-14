@@ -17,18 +17,18 @@
         /// <summary>
         /// Максимальная цена
         /// </summary>
-        public string MaxPrice { get; set; }
+        public decimal MaxPrice { get; set; }
         /// <summary>
         ///  Минимальная цена
         /// </summary>
-        public string MinPrice { get; set; }
+        public decimal MinPrice { get; set; }
         /// <summary>
         /// Комиссия тейкера
         /// </summary>
-        public string TakerFee { get; set; }
+        public decimal TakerFee { get; set; }
         /// <summary>
         /// Комиссия мейкера
         /// </summary>
-        public decimal MakerFee { get; set; }
+        public decimal MakerFee { get; set; } 
     }
 }

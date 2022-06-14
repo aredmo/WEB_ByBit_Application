@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using BybitMapper.InversePerpetual.RestV2.Requests.Market;
+using BybitMapper.Perpetual.RestV2.Requests.Market;
+using BybitMapper.Perpetual.RestV2.Requests.Account.Wallet;
 using BybitMapper.Perpetual.RestV2;
 using BybitMapper.Requests;
 using RestSharp;
 
 using BybitMapper.Perpetual.RestV2.Requests.Market;
-
+using BybitMapper.Perpetual.RestV2.Responses.Account.Wallet;
 using BybitMapper.Perpetual.RestV2.Responses.Market;
 using RestSharp.Serialization.Json;
 
@@ -25,7 +26,7 @@ namespace WebApplication2
         {
             m_HandlerComposition = new PerpetualHandlerComposition(new PerpetualHandlerFactory());
             m_RequestArranger = new RequestArranger();
-            _restClient = new RestClient();
+            _restClient = new RestClient("https://api-testnet.bybit.com");
         }
 
         /// <summary>
@@ -38,11 +39,11 @@ namespace WebApplication2
         {
             m_HandlerComposition = new PerpetualHandlerComposition(new PerpetualHandlerFactory());
             m_RequestArranger = new RequestArranger(api_key, secret, func);
-            _restClient = new RestClient();
+            _restClient = new RestClient("https://api-testnet.bybit.com");
         }
         
         #region [Base]
-        public string SendTest(RequestPayload payload)
+        private string SendTest(RequestPayload payload)
         {
             // var h = new Dictionary<string, string> { { "Referer", "Cscalp" } };
             var request = m_RequestArranger.Arrange(payload);
@@ -83,12 +84,20 @@ namespace WebApplication2
         
         #endregion
         
-         public QuerySymbolResponse QuerySymbolRequest() //для таблицы инструментов (нужно создать для баланса)
+         public QuerySymbolResponse QuerySymbolRequest() //для таблицы инструментов 
         {
             var request = new QuerySymbolRequest();
             var response = SendTest(request);
             var obj = m_HandlerComposition.HandleQuerySymbolResponse(response);
             return obj;
         }
+
+         public GetWalletBalanceResponse GetWalletBalanceRequest() // запрос для баланса 
+         {
+             var request = new GetWalletBalanceRequest();
+             var response = SendTest(request);
+             var obj = m_HandlerComposition.HandleWalletBalanceResponse(response);
+             return obj;
+         }
     }
 }
