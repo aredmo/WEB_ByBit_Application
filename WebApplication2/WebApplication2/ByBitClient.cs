@@ -1,24 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
 using BybitMapper.Perpetual.RestV2.Requests.Market;
 using BybitMapper.Perpetual.RestV2.Requests.Account.Wallet;
 using BybitMapper.Perpetual.RestV2;
 using BybitMapper.Requests;
 using RestSharp;
 
-using BybitMapper.Perpetual.RestV2.Requests.Market;
 using BybitMapper.Perpetual.RestV2.Responses.Account.Wallet;
 using BybitMapper.Perpetual.RestV2.Responses.Market;
-using RestSharp.Serialization.Json;
 
 namespace WebApplication2
 {
     public class ByBitClient
     {
-        private PerpetualHandlerComposition m_HandlerComposition;
-        private RequestArranger m_RequestArranger;
-        private RestClient _restClient;
-        
+        private static PerpetualHandlerComposition m_HandlerComposition;
+        public PerpetualHandlerComposition PRestHandler = new PerpetualHandlerComposition(new PerpetualHandlerFactory());
+        private static RequestArranger m_RequestArranger;
+        private static RestClient _restClient;
+        private string _baseUrl = "https://api.bybit.com";
         /// <summary>
         /// Публичный конструктор класса
         /// </summary>
@@ -26,24 +24,32 @@ namespace WebApplication2
         {
             m_HandlerComposition = new PerpetualHandlerComposition(new PerpetualHandlerFactory());
             m_RequestArranger = new RequestArranger();
-            _restClient = new RestClient("https://api-testnet.bybit.com");
+            _restClient = new RestClient(_baseUrl);
         }
 
+        
         /// <summary>
         /// Приватный конструктор класса
         /// </summary>
         /// <param name="api_key"></param>
         /// <param name="secret"></param>
         /// <param name="func"></param>
-        public ByBitClient(string api_key, string secret, Func<long> func)
+        public ByBitClient(string api_key, string secret, Func<long> getTime)
         {
             m_HandlerComposition = new PerpetualHandlerComposition(new PerpetualHandlerFactory());
-            m_RequestArranger = new RequestArranger(api_key, secret, func);
-            _restClient = new RestClient("https://api-testnet.bybit.com");
+            m_RequestArranger = new RequestArranger(api_key, secret, getTime);
+            _restClient = new RestClient(_baseUrl);
         }
         
         #region [Base]
-        private string SendTest(RequestPayload payload)
+
+        private Func<long> getTime = () =>
+        {
+            var req = new ServerTimeRequest();
+            var res = SendTest(req);
+            return (long)Math.Round(m_HandlerComposition.HandlerServerTimeResponse(res).Timestamp * 1000);
+        }; 
+        public static string SendTest(RequestPayload payload)
         {
             // var h = new Dictionary<string, string> { { "Referer", "Cscalp" } };
             var request = m_RequestArranger.Arrange(payload);
@@ -65,6 +71,28 @@ namespace WebApplication2
             var result = _restClient.Execute(req)?.Content;
             return (result);
         }
+        public string SendTestWallet(KeyedRequestPayload payload)
+        {
+            // var h = new Dictionary<string, string> { { "Referer", "Cscalp" } };
+            var request = m_RequestArranger.Arrange(payload);
+            var req = new RestRequest(request.Query, MapRequestMethod(request.Method));
+
+            if (request.Body != null)
+            {
+                req.RequestFormat = DataFormat.Json;
+                req.AddBody(request.Body);
+            }
+
+            if (request.Headers != null)
+            {
+                foreach (var header in request.Headers)
+                {
+                    req.AddHeader(header.Key, header.Value);
+                }
+            }
+            var wallet = _restClient.Execute(req)?.Content;
+            return (wallet);
+        }
         private static Method MapRequestMethod(RequestMethod method)
         {
             switch (method)
@@ -84,20 +112,20 @@ namespace WebApplication2
         
         #endregion
         
-         public QuerySymbolResponse QuerySymbolRequest() //для таблицы инструментов 
+        public QuerySymbolResponse QuerySymbolRequest() //для таблицы инструментов 
         {
             var request = new QuerySymbolRequest();
             var response = SendTest(request);
             var obj = m_HandlerComposition.HandleQuerySymbolResponse(response);
             return obj;
         }
-
-         public GetWalletBalanceResponse GetWalletBalanceRequest() // запрос для баланса 
-         {
-             var request = new GetWalletBalanceRequest();
-             var response = SendTest(request);
-             var obj = m_HandlerComposition.HandleWalletBalanceResponse(response);
-             return obj;
-         }
+         
+        public GetWalletBalanceResponse GetWalletBalanceRequest() //для баланса
+        { 
+            var request = new GetWalletBalanceRequest();
+            var response = SendTestWallet(request);
+            var obj = m_HandlerComposition.HandleWalletBalanceResponse(response);
+            return obj;
+        }
     }
 }

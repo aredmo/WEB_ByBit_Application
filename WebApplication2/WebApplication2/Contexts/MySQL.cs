@@ -5,7 +5,7 @@ namespace WebApplication2.Contexts
 {
     public class MySQL : DbContext
     {
-        public DbSet<InfoWallet> InfoWallets { get; set; } // таблица класса InfoWallet
+        public DbSet<BalanceEntity> BalanceEntity { get; set; } // таблица класса BalanceEntity
         
         public MySQL(DbContextOptions<MySQL> option) : base(option)
         {
